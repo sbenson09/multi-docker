@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before-install:
+  - docker build -t sbenson09/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true sbenson09/react-test npm test 
+
+after_success:
+  - docker build -t sbenson09/multi-client ./client
+  - docker build -t sbenson09/multi-nginx ./nginx
+  - docker build -t sbenson09/multi-server ./server
+  - docker build -t sbenson09/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push sbenson09/multi-client
+  - docker push sbenson09/multi-nginx
+  - docker push sbenson09/multi-server
+  - docker push sbenson09/multi-worker
